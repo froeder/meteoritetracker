@@ -37,7 +37,7 @@
           <template slot="items" slot-scope="props">
             <td class="text-xs-left">{{ props.item.name }}</td>
             <td class="text-xs-left">{{ props.item.recclass }}</td>
-            <td class="text-xs-left">{{ props.item.massa }}</td>
+            <td class="text-xs-left">{{ props.item.massa / 1000 }}</td>
             <td class="text-xs-left">{{ props.item.year.split('/')[2].split(' ')[0] }}</td>
           </template>
           <v-alert slot="no-results" :value="true" color="error" icon="warning">
@@ -59,9 +59,9 @@ import meteoros from '../assets/meteoros.json'
       return {
         search: '',
         headers: [
-          { text: 'Nome', value: 'name' },
+          { text: 'Cidade', value: 'name' },
           { text: 'Classe' },
-          { text: 'Massa (g)' },
+          { text: 'Massa (kg)', value:'massa' },
           { text: 'Ano', value: 'year' },
         ],
         meteoritos: meteoros
