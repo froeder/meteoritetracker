@@ -1,31 +1,216 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <v-app 
+  style="
+  " text-xs-center>
+    <v-toolbar color="primary" app>
+      <v-toolbar-title class="headline">
+        <span class="meteor">MeteoRiTe</span> 
+        <span  class="tracker"> tracker</span>
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+    </v-toolbar>
+
+    <canvas style="position:fixed" id="bgCanvas"></canvas>
+<canvas style="position:fixed" id="terCanvas"></canvas>
+
+    <v-content>
+      <router-view/>
+    </v-content>
+
+    <v-footer style="background-color: #0B3D91 ; color:white" class="footer">
+      <a href="https://froeder.github.io" target="no_blank" class="link">Jhonatan Froeder </a> &copy; All Rights reserved
+    </v-footer>
+  </v-app>
 </template>
 
+<script>
+
+export default {
+  name: 'App',
+  data () {
+    return {
+      //
+    }
+  },
+  mounted(){
+      (function() {
+    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || 
+								  window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+              };
+	  window.requestAnimationFrame = requestAnimationFrame;
+	})();
+
+	// Terrain stuff.
+	var terrain = document.getElementById("terCanvas"),
+		background = document.getElementById("bgCanvas"),
+		terCtx = terrain.getContext("2d"),
+		bgCtx = background.getContext("2d"),
+		width = window.innerWidth,
+		height = document.body.offsetHeight;
+    (height < 400)?height = 400:height;
+
+	terrain.width = background.width = width;
+	terrain.height = background.height = height;
+
+	// Some random points
+	var points = [],
+		displacement = 140,
+		power = Math.pow(2,Math.ceil(Math.log(width)/(Math.log(2))));
+	
+	// set the start height and end height for the terrain
+	points[0] = (height - (Math.random()*height/2))-displacement;
+	points[power] = (height - (Math.random()*height/2))-displacement;
+
+	// create the rest of the points
+	for(var i = 1; i<power; i*=2){
+		for(var j = (power/i)/2; j <power; j+=power/i){
+			points[j] = ((points[j - (power/i)/2] + points[j + (power/i)/2]) / 2) + Math.floor(Math.random()*-displacement+displacement );
+		}
+		displacement *= 0.6;
+	}
+
+	// draw the terrain
+	terCtx.beginPath();
+					
+	for(var i = 0; i<=width; i++){
+		if(i === 0){
+			terCtx.moveTo(0, points[0]);
+		}else if(points[i] !== undefined){
+			terCtx.lineTo(i, points[i]);
+		}
+	}
+
+	terCtx.lineTo(width,terrain.height);
+	terCtx.lineTo(0,terrain.height);
+	terCtx.lineTo(0,points[0]);
+	terCtx.fill();
+
+
+	// Second canvas used for the stars
+	bgCtx.fillStyle = '#05004c';
+	bgCtx.fillRect(0,0,width,height);
+
+	// stars
+	function Star(options){
+		this.size = Math.random()*2;
+		this.speed = Math.random()*.1;
+		this.x = options.x;
+		this.y = options.y;
+	}
+
+	Star.prototype.reset = function(){
+		this.size = Math.random()*2;
+		this.speed = Math.random()*.1;
+		this.x = width;
+		this.y = Math.random()*height;
+	}
+	
+	Star.prototype.update = function(){
+		this.x-=this.speed;
+		if(this.x<0){
+		  this.reset();
+		}else{
+		  bgCtx.fillRect(this.x,this.y,this.size,this.size); 
+		}
+	}
+	
+	function ShootingStar(){
+		this.reset();
+	}
+	
+	ShootingStar.prototype.reset = function(){
+		this.x = Math.random()*width;
+		this.y = 0;
+		this.len = (Math.random()*80)+10;
+		this.speed = (Math.random()*10)+6;
+		this.size = (Math.random()*1)+0.1;
+    // this is used so the shooting stars arent constant
+		this.waitTime =  new Date().getTime() + (Math.random()*3000)+500;
+		this.active = false;
+	}
+	
+	ShootingStar.prototype.update = function(){
+		if(this.active){
+			this.x-=this.speed;
+			this.y+=this.speed;
+			if(this.x<0 || this.y >= height){
+			  this.reset();
+			}else{
+			bgCtx.lineWidth = this.size;
+				bgCtx.beginPath();
+				bgCtx.moveTo(this.x,this.y);
+				bgCtx.lineTo(this.x+this.len, this.y-this.len);
+				bgCtx.stroke();
+			}
+		}else{
+			if(this.waitTime < new Date().getTime()){
+				this.active = true;
+			}			
+		}
+	}
+
+	var entities = [];
+	
+	// init the stars
+	for(var i=0; i < height; i++){
+		entities.push(new Star({x:Math.random()*width, y:Math.random()*height}));
+	}
+  
+	// Add 2 shooting stars that just cycle.
+	entities.push(new ShootingStar());
+	entities.push(new ShootingStar());
+	
+	//animate background
+	function animate(){
+		bgCtx.fillStyle = '#05004c';
+		bgCtx.fillRect(0,0,width,height);
+		bgCtx.fillStyle = '#ffffff';
+		bgCtx.strokeStyle = '#ffffff';
+
+		var entLen = entities.length;
+	  
+		while(entLen--){
+			entities[entLen].update();
+		}
+		
+		requestAnimationFrame(animate);
+	}
+	animate();
+
+
+  }
+}
+</script>
+
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
+@import url('https://fonts.googleapis.com/css?family=Major+Mono+Display|Thasadith|Orbitron');
+
+.meteor{
+  font-family: 'Major Mono Display', monospace;
+  color: white ;
+  font-weight: bold
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.tracker{
+  font-family: Orbitron;
+  color: white ;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+.footer{
+  color: white;
+  padding: .3em ;
+  text-align: center
 }
+
+.link{
+  color: white ;
+  text-decoration: none
+}
+
+.fundo{
+  background: rgb(14,13,14);
+background: linear-gradient(90deg, rgba(14,13,14,1) 0%, rgba(11,11,14,1) 49%, rgba(15,33,37,1) 100%);
+}
+
 </style>

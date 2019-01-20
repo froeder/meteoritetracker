@@ -1,59 +1,82 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-pwa" target="_blank" rel="noopener">pwa</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+  <v-container>
+    <v-layout
+      text-xs-center
+      wrap
+    >
+      <v-flex>
+        <v-card class="texto-nasa">
+          <v-card-text>
+            A terra constantemente é atingida por rochas espaciais. Aqueles que sobrevivem ao entrar na atmosfera e colidem com a superfície são chamados de meteoritos.
+            <br>
+            A <strong>nasa</strong>  mantém um regristro histórico de todas essas colições, com informações sobre nome, ano, massa e geolocalização do meteorito.
+            <br>
+            foi com esses dados que esse site foi construído. para acessar a base de dados, <a href="https://data.nasa.gov/Space-Science/Meteorite-Landings/gh4g-9sfh" target="no_blank">Clique aqui</a>.
+          </v-card-text>
+        </v-card>
+      </v-flex>
+    
+      <v-flex style="padding-top:40em">
+        <v-card>
+          <v-card-title style="font-family:Orbitron ; font-weight:600">
+          Dados tabulados
+          <v-spacer></v-spacer>
+          <v-text-field
+            v-model="search"
+            append-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-card-title>
+        <v-data-table
+          :headers="headers"
+          :items="meteoritos"
+          :search="search"
+        >
+          <template slot="items" slot-scope="props">
+            <td class="text-xs-left">{{ props.item.name }}</td>
+            <td class="text-xs-left">{{ props.item.recclass }}</td>
+            <td class="text-xs-left">{{ props.item.massa }}</td>
+            <td class="text-xs-left">{{ props.item.year.split('/')[2].split(' ')[0] }}</td>
+          </template>
+          <v-alert slot="no-results" :value="true" color="error" icon="warning">
+            Sua busca por "{{ search }}" não retornou resultados.
+          </v-alert>
+        </v-data-table>
+        </v-card>
+      </v-flex>
+
+    </v-layout>
+  </v-container>
 </template>
 
 <script>
-export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+import meteoros from '../assets/meteoros.json'
+
+  export default {
+    data () {
+      return {
+        search: '',
+        headers: [
+          { text: 'Nome', value: 'name' },
+          { text: 'Classe' },
+          { text: 'Massa (g)' },
+          { text: 'Ano', value: 'year' },
+        ],
+        meteoritos: meteoros
+      }
+    }
   }
-}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+<style>
+@import url('https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat+Alternates|Orbitron|Poiret+One|Thasadith');
+
+.texto-nasa{
+  font-family: 'Major Mono Display', monospace;
+  font-size: 1em ;
+  font-weight: bold
 }
 </style>
+
